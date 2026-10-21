@@ -1,0 +1,12 @@
+{
+  "width": 1080, "height": 1920, "fps": 30,
+  "voicebox_url": "http://127.0.0.1:17493",
+  "voicebox_profile_id": "",
+  "language": "zh",
+  "min_gap": 0.28, "max_gap": 0.45, "seg_gap": 0.20,
+  "chars_per_sec": 5.5,
+  "caption_max_chars": 14,
+  "accent": "#E5283A",
+  "cover_title": "AI 智能体是你的实习生？",
+  "loudness_target": -14.0
+}

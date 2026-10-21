@@ -1,0 +1,15 @@
+{
+  "name": "talking-head-video-skill",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Optional HTML renderer and CDP upload helper for the talking-head-video skill",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "check": "node --check scripts/render_html.mjs && node --check scripts/upload_channels_cdp.mjs"
+  },
+  "optionalDependencies": {
+    "puppeteer-core": "^23.0.0"
+  }
+}

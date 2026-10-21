@@ -1,0 +1,42 @@
+<!doctype html>
+<!-- Vertical 1080x1920 talking-head template driven by window.THV.seek(frame,fps).
+     Deterministic: no CSS animations/timers; every frame is computed from time.
+     Safe zones: content y300-1290, captions ~y1330, keep y>1500 empty (platform UI). -->
+<html><head><meta charset="utf-8"><style>
+  :root { --bg:#26262e; --fg:#f5f5f5; --dim:#787882; --accent:#E5283A; }
+  html,body { margin:0; width:1080px; height:1920px; overflow:hidden; background:var(--bg);
+    font-family:"Noto Sans CJK SC","PingFang SC","Microsoft YaHei",sans-serif; color:var(--fg); }
+  #bar { position:absolute; top:0; left:0; height:8px; background:var(--accent); }
+  #chapter { position:absolute; top:200px; left:80px; font-size:40px; color:var(--dim); }
+  #visual { position:absolute; top:520px; left:100px; right:100px; font-size:96px; font-weight:900; line-height:1.3; }
+  #cap { position:absolute; top:1330px; left:0; right:0; text-align:center; font-size:64px; font-weight:800; }
+  #cap span { color:var(--dim); } #cap span.on { color:var(--fg); } #cap span.on.kw { color:var(--accent); }
+  #cover { position:absolute; inset:0; background:var(--bg); display:none; }
+  #cover h1 { position:absolute; top:480px; left:140px; right:120px; font-size:150px; line-height:1.2; margin:0;
+    border-left:20px solid var(--accent); padding-left:40px; }
+</style></head><body>
+<div id="bar"></div><div id="chapter"></div><div id="visual"></div><div id="cap"></div>
+<div id="cover"><h1 id="coverTitle"></h1></div>
+<script>
+window.THV = {
+  coverFrames: 3,
+  load(d) { Object.assign(this, d); this.dur = Math.max(...d.timing.map(t => t.end)) + 0.15;
+    this.start = Object.fromEntries(d.timing.map(t => [t.id, t.start]));
+    document.getElementById('coverTitle').textContent = d.segments[0].cover || d.segments[0].text; },
+  seek(f, fps) {
+    const t = f / fps, cover = f < this.coverFrames;
+    document.getElementById('cover').style.display = cover ? 'block' : 'none';
+    if (cover) return;
+    document.getElementById('bar').style.width = (1080 * t / this.dur) + 'px';
+    const seg = [...this.segments].reverse().find(s => this.start[s.id] <= t) || this.segments[0];
+    const k = Math.min(1, (t - this.start[seg.id]) * fps / 8);
+    const v = document.getElementById('visual');
+    v.textContent = seg.visual || ''; v.style.transform = `translateX(${(1 - k) ** 2 * 120}px)`; v.style.opacity = k;
+    document.getElementById('chapter').textContent = seg.chapter || '';
+    const cb = this.captions.find(c => c.start <= t && t < c.end);
+    const cap = document.getElementById('cap'); cap.innerHTML = '';
+    if (cb) for (const c of cb.chars) { const s = document.createElement('span'); s.textContent = c.t;
+      if (c.s != null && c.s <= t) s.className = 'on' + (c.kw ? ' kw' : ''); cap.appendChild(s); }
+  }
+};
+</script></body></html>
