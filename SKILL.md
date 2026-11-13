@@ -108,6 +108,14 @@ bash ../scripts/run_all.sh
 
 参考：`references/流程说明.md`、`口播稿写法.md`、`配音规则.md`、`封面首帧规则.md`、`质检清单.md`、[director-workflow.md](references/director-workflow.md)（开拍先写 3 候选钩子 `TREATMENT.md` + `Styleframe` 3 帧预审）；示例：`examples/ai-agent-intern/`。
 ---
+
+## 视觉审美与镜头节奏规范（必读）
+
+开拍与渲染前，必须先读 [视觉审美与镜头节奏规范](references/aesthetic-spec.md)，并在脚本与排版中落实以下标准：
+- **流派先行**：开拍前先从五大参考流派（`ManvsMachine` 黑金质感 / `Ordinary Folk` 几何弹性 / `Art of the Title` 电影排印 / `Apple Keynote` 果味交互 / `Golden Wolf` 高能快切）中选定其一，不空喊“高级感”。
+- **拒绝幻灯片**：单张静图或同一景别停留不超过 3 秒，通过局部微距特写、全景/中景/特写交替、`Crash Zoom` / `Connected Pan` / `Whip Pan` 等运镜保持视觉流动。
+- **数学排版与节制配色**：字号按 1.25x~1.333x 比例拉开层级，底部字幕单行不超过 18 字（16:9 大片优先用 2.35:1 电影黑边放字幕）；同屏主色不超过 2 种，高饱和强调色面积不超过 10%。
+
 <!-- BRAND_FOOTER_HUIXIN -->
 ## 关于作者与品牌（袁六伟 · 台州汇芯）
 
