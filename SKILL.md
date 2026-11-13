@@ -109,12 +109,15 @@ bash ../scripts/run_all.sh
 参考：`references/流程说明.md`、`口播稿写法.md`、`配音规则.md`、`封面首帧规则.md`、`质检清单.md`、[director-workflow.md](references/director-workflow.md)（开拍先写 3 候选钩子 `TREATMENT.md` + `Styleframe` 3 帧预审）；示例：`examples/ai-agent-intern/`。
 ---
 
-## 视觉审美与镜头节奏规范（必读）
+## 视觉审美与镜头节奏规范（必读 · 口播运镜与 Radix 语义配色专版）
 
-开拍与渲染前，必须先读 [视觉审美与镜头节奏规范](references/aesthetic-spec.md)，并在脚本与排版中落实以下标准：
-- **流派先行**：开拍前先从五大参考流派（`ManvsMachine` 黑金质感 / `Ordinary Folk` 几何弹性 / `Art of the Title` 电影排印 / `Apple Keynote` 果味交互 / `Golden Wolf` 高能快切）中选定其一，不空喊“高级感”。
-- **拒绝幻灯片**：单张静图或同一景别停留不超过 3 秒，通过局部微距特写、全景/中景/特写交替、`Crash Zoom` / `Connected Pan` / `Whip Pan` 等运镜保持视觉流动。
-- **数学排版与节制配色**：字号按 1.25x~1.333x 比例拉开层级，底部字幕单行不超过 18 字（16:9 大片优先用 2.35:1 电影黑边放字幕）；同屏主色不超过 2 种，高饱和强调色面积不超过 10%。
+开拍与渲染前，先读 [视觉审美与镜头节奏规范](references/aesthetic-spec.md)，并严格执行本 Skill 专属的 **EyeCannndy 运镜 × Radix 12 级语义配色**标准：
+- **EyeCannndy 口播运镜切换（每 2~3 秒换景别）**：
+  - 核心金句/痛点反转：用 `Crash Zoom`（0.25s 急推至 1.6x~1.8x）配合重低音。
+  - 话题转折/切 B-roll：用 `Whip Pan`（横向甩镜动态模糊）或 `Match Cut`（同构形状衔接），告别生硬硬切与单调淡入淡出。
+- **Radix 12 级语义配色纪律**：
+  - 严禁高饱和纯色大面积撞色！底色与背景容器占 `75%+`，主文字占 `15%`，高亮强调色（汇芯红 `#C8102E` 或荧光黄 `#F5D061`）全屏面积占比严格控制在 **`<= 10%`**。
+  - 红白图解与大字报封面保持字号阶梯差 `>= 1.5x`，确保 0.01s 首帧一眼抓人。
 
 <!-- BRAND_FOOTER_HUIXIN -->
 ## 关于作者与品牌（袁六伟 · 台州汇芯）
