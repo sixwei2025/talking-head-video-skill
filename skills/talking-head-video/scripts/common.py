@@ -16,10 +16,12 @@ def save_json(obj, p):
 def load_config(path=None):
     """Read project config.json; environment variables override file values."""
     cfg = {
-        'width': 1080, 'height': 1920, 'fps': 30,
+        'width': 1920, 'height': 1080, 'fps': 30,
         'voicebox_url': 'http://127.0.0.1:17493', 'voicebox_profile_id': '', 'language': 'zh',
         'min_gap': 0.28, 'max_gap': 0.45, 'seg_gap': 0.20, 'chars_per_sec': 5.5,
-        'caption_max_chars': 14, 'font': '', 'accent': '#E5283A', 'cover_title': '',
+        'caption_max_chars': 14, 'font': '', 'accent': '#C8102E', 'cover_title': '',
+        'cover_kicker': 'HUIXIN · AI STUDIO', 'cover_brand': '', 'cover_sub': '',
+        'cover_metric': '', 'cover_theme': 'swiss_dark', 'cover_layout': '',
         'loudness_target': -14.0,
     }
     if path and os.path.exists(path):

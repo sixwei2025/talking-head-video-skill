@@ -18,8 +18,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('video')
     ap.add_argument('--report', default=None)
-    ap.add_argument('--width', type=int, default=1080)
-    ap.add_argument('--height', type=int, default=1920)
+    ap.add_argument('--width', type=int, default=0, help='expected width (0 = accept 1920x1080 or 1080x1920)')
+    ap.add_argument('--height', type=int, default=0, help='expected height')
     ap.add_argument('--freeze-d', type=float, default=2.0)
     ap.add_argument('--silence-d', type=float, default=0.30)
     ap.add_argument('--lufs-min', type=float, default=-16.0)
@@ -31,7 +31,10 @@ def main():
                                     '-of', 'json', v], capture_output=True, text=True).stdout)
     dur = float(pr['format']['duration']); vs = [s for s in pr['streams'] if s['codec_type'] == 'video'][0]
     out.append(f"format: {vs['codec_name']} {vs['width']}x{vs['height']} {vs['r_frame_rate']} dur={dur:.2f}s audio={'yes' if any(s['codec_type']=='audio' for s in pr['streams']) else 'NO'}")
-    if (vs['width'], vs['height']) != (a.width, a.height):
+    if a.width and a.height:
+        if (vs['width'], vs['height']) != (a.width, a.height):
+            fail.append('resolution')
+    elif (vs['width'], vs['height']) not in ((1920, 1080), (1080, 1920), (1080, 1440)):
         fail.append('resolution')
     bl = re.findall(r'black_start:([\d.]+) black_end:([\d.]+)', ff(['-i', v, '-vf', 'blackdetect=d=0.1:pix_th=0.05', '-an', '-f', 'null', '-']))
     out.append(f'blackdetect: {bl or "none"}'); fail += ['black'] if bl else []

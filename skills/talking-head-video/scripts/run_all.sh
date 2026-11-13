@@ -19,7 +19,14 @@ log captions; $PY "$S/build_captions.py"
 log render; $PY "$S/render_pillow.py" --out build/render.mp4 ${PREVIEW_SECONDS:+--max-seconds $PREVIEW_SECONDS} 2>>build/run.log
 if [ "${PLACEHOLDER:-0}" = 1 ] && [ -z "${TONE:-}" ]; then cp build/render.mp4 build/final.mp4; QCF=--skip-audio
 else log loudnorm; bash "$S/loudnorm.sh" build/render.mp4 build/final.mp4; QCF=; fi
-ffmpeg -y -v error -i build/final.mp4 -frames:v 1 build/cover.png
+if [ -f build/cover/cover-3x4.jpg ]; then
+  cp build/cover/cover-3x4.jpg build/cover-3x4.jpg
+  cp build/cover/cover-3x4.png build/cover.png
+  cp build/cover/cover-3x4.jpg "deliver/$SLUG-cover-3x4.jpg"
+else
+  ffmpeg -y -v error -i build/final.mp4 -frames:v 1 build/cover.png
+fi
+[ -f build/cover/cover-opening.png ] && cp build/cover/cover-opening.png "deliver/$SLUG-cover-16x9.png" || true
 log qc; $PY "$S/qc.py" build/final.mp4 --report build/qc.txt $QCF || { log "QC failed, see build/qc.txt"; false; }
 cp build/final.mp4 "deliver/$SLUG.mp4"
 [ -f 发布说明.md ] && cp 发布说明.md deliver/ || true

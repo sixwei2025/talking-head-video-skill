@@ -64,17 +64,45 @@ def main():
            '-i', a.audio, '-t', f'{dur:.3f}', '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'medium', '-crf', '20',
            '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-movflags', '+faststart', a.out]
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
+    # 优先使用 render_video_cover.py 生成的 Editorial / Swiss 高审美封面 (cover-3x4.jpg + cover-opening.png)
+    cover_dir = os.path.join(os.path.dirname(os.path.abspath(a.out)), 'cover')
+    opening_png = os.path.join(cover_dir, 'cover-opening.png')
+    cover_3x4_png = os.path.join(cover_dir, 'cover-3x4.png')
+    if not os.path.isfile(opening_png) or not os.path.isfile(cover_3x4_png):
+        try:
+            from render_video_cover import render_cover_pair
+            t_lines = [x.strip() for x in str(title).replace('\n', '|').split('|') if x.strip()]
+            if len(t_lines) == 1 and len(t_lines[0]) > 9:
+                mid = len(t_lines[0]) // 2
+                t_lines = [t_lines[0][:mid], t_lines[0][mid:]]
+            brief = {
+                'kicker': cfg.get('cover_kicker', 'HUIXIN · AI STUDIO'),
+                'brand': cfg.get('cover_brand', ''),
+                'title_lines': t_lines[:3],
+                'subtitle': cfg.get('cover_sub', ''),
+                'metric': cfg.get('cover_metric', ''),
+                'theme': cfg.get('cover_theme', 'swiss_dark'),
+                'layout': cfg.get('cover_layout', ''),
+            }
+            render_cover_pair(brief, cover_dir, dpr=2)
+        except Exception as e:
+            print('warn: render_video_cover fallback to pillow:', e, file=sys.stderr)
+
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     cover = None
     for i in range(n):
         t = i / FPS
         if i < a.cover_frames:
             if cover is None:
-                im = Image.new('RGB', (W, H), bg); d = ImageDraw.Draw(im)
-                d.rectangle([80, 520, 100, 1060], fill=acc)
-                y = 520
-                for ln in wrap(d, title, f_cover, W - 260)[:4]:
-                    d.text((140, y), ln, font=f_cover, fill=white); y += 180
+                src_cov = opening_png if (W >= H and os.path.isfile(opening_png)) else (cover_3x4_png if os.path.isfile(cover_3x4_png) else None)
+                if src_cov:
+                    im = Image.open(src_cov).convert('RGB').resize((W, H), Image.LANCZOS)
+                else:
+                    im = Image.new('RGB', (W, H), bg); d = ImageDraw.Draw(im)
+                    d.rectangle([80, int(H * 0.27), 100, int(H * 0.55)], fill=acc)
+                    y = int(H * 0.27)
+                    for ln in wrap(d, title, f_cover, W - 260)[:3]:
+                        d.text((140, y), ln, font=f_cover, fill=white); y += 170
                 cover = im.tobytes()
             p.stdin.write(cover); continue
         im = Image.new('RGB', (W, H), bg); d = ImageDraw.Draw(im)
