@@ -3,18 +3,18 @@
 <img src="assets/showcase/hero-banner.jpg" alt="口播短视频 Skill — 一篇口播稿，一条命令跑出 1080×1920 竖屏口播成片" width="100%" />
 
 # 竖屏口播短视频全链路 Skill
-### `talking-head-video-skill` · 克隆配音 + ASR 错字重录 + 逐字卡拉OK字幕 + 6 项机械质检
+### `talking-head-video-skill` · 克隆配音 + ASR 错字重录 + 逐字卡拉OK字幕 + 6 项成片质检
 
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-Specification-C8102E?style=flat-square)](https://agentskills.io)
-[![Spec](https://img.shields.io/badge/Spec-1080×1920%20·%2030fps%20·%20-14%20LUFS-18181B?style=flat-square)](#三十步口播工程流水线与关键参数)
-[![Captions](https://img.shields.io/badge/Captions-逐字点亮%20·%20每块≤14字硬闸-B45309?style=flat-square)](#一看真实渲染效果逐字卡拉ok字幕--动态分镜)
-[![QC](https://img.shields.io/badge/Automated%20QC-黑帧/冻帧/静音/首帧%206项硬闸-059669?style=flat-square)](#四六项自动化机械质检qcpy)
+[![Spec](https://img.shields.io/badge/Spec-1080×1920%20·%2030fps%20·%20-14%20LUFS-18181B?style=flat-square)](#二十步口播工程流水线与架构图)
+[![Captions](https://img.shields.io/badge/Captions-逐字点亮%20·%20每屏≤14字-B45309?style=flat-square)](#一看真实渲染效果逐字卡拉ok字幕--动态分镜)
+[![QC](https://img.shields.io/badge/Automated%20QC-黑帧/冻帧/静音/首帧%206项自动质检-059669?style=flat-square)](#四六项自动化成片质检qcpy)
 
 > 🔴 **作者：袁六伟 · 台州汇芯**｜一人 AI 公司创业者，学员 7000+，客户 100+，得到 / 华为分享老师  
 > 📮 更多 AI 视频与自动化实战，关注 **公众号 / 视频号：袁六伟**
 
 **把一篇口播稿变成能直接发视频号/抖音的 1080×1920 竖屏成片，中间不碰剪辑轨。**  
-一条 `run_all.sh` 命令串起：**口播稿分镜 → TTS/克隆声配音 → Faster-Whisper ASR 自动校对错漏字并局部重录 → 气口静音压缩（0.28–0.45s） → 逐字点亮卡拉OK字幕 → 双引擎画面渲染 → `-14 LUFS` 广播级响度归一 → 6 项 FFmpeg 机械质检**。
+一条 `run_all.sh` 命令串起：**口播稿分镜 → TTS/克隆声配音 → Faster-Whisper ASR 自动校对错漏字并局部重录 → 气口静音压缩（0.28–0.45s） → 逐字点亮卡拉OK字幕 → 双引擎画面渲染 → `-14 LUFS` 广播级响度归一 → 6 项 FFmpeg 成片自动质检**。
 
 ```bash
 # 一键安装 Skill
@@ -25,7 +25,7 @@ mkdir my-video && cp skills/talking-head-video/examples/ai-agent-intern/{config.
 cd my-video && PLACEHOLDER=1 TONE=1 SLUG=demo bash ../skills/talking-head-video/scripts/run_all.sh
 ```
 
-[看逐字字幕动效](#一看真实渲染效果逐字卡拉ok字幕--动态分镜) · [十步工程流水线](#二十步口播工程流水线与架构图) · [ASR 校对与气口控制](#三核心护城河asr-局部重录与气口呼吸算法) · [6 项机械质检](#四六项自动化机械质检qcpy) · [安装与依赖](#五环境依赖与快速上手)
+[看逐字字幕动效](#一看真实渲染效果逐字卡拉ok字幕--动态分镜) · [十步工程流水线](#二十步口播工程流水线与架构图) · [ASR 校对与气口控制](#三核心护城河asr-局部重录与气口呼吸算法) · [6 项成片质检](#四六项自动化成片质检qcpy) · [安装与依赖](#五环境依赖与快速上手)
 
 </div>
 
@@ -63,7 +63,7 @@ cd my-video && PLACEHOLDER=1 TONE=1 SLUG=demo bash ../skills/talking-head-video/
 | **05** | **逐字时间轴与字幕分块** | `build_captions.py` | `build/captions.json` | **每块字幕严格 ≤14 字**（超长报错要求改稿，绝不靠缩小字号硬塞） |
 | **06** | **双引擎竖屏渲染** | `render_pillow.py`（零前端依赖）或 `render_html.mjs` | `build/render.mp4` | 确定性逐帧接口 `window.THV.seek(frame, fps)`，支持 Pillow 直出或 Chrome 渲染 |
 | **07–08** | **响度归一与首帧封面** | `loudnorm.sh` | `build/final.mp4` + `cover.png` | 两遍归一至 `-14 LUFS / -1.5 dBTP`；第 0–2 帧（0.1s）压入封面供平台自动抓图 |
-| **09–10** | **6 项机械质检与交付** | `qc.py` | `build/qc.txt` + `deliver/` | 全部质检项 PASS 才写出 `build/DONE`；交付目录只留成片与发布说明 |
+| **09–10** | **6 项成片质检与交付** | `qc.py` | `build/qc.txt` + `deliver/` | 全部质检项 PASS 才写出 `build/DONE`；交付目录只留成片与发布说明 |
 
 ---
 
@@ -77,11 +77,11 @@ cd my-video && PLACEHOLDER=1 TONE=1 SLUG=demo bash ../skills/talking-head-video/
 
 ---
 
-## 四、六项自动化机械质检（`qc.py`）
+## 四、六项自动化成片质检（`qc.py`）
 
 成片交付前强制执行 `python3 scripts/qc.py`，任何一项不过直接判 `FAILED`：
 
-- ✅ **规格硬闸**：分辨率 `1080×1920`，编码 `H.264 + AAC 48kHz`，音轨完整。
+- ✅ **规格校验**：分辨率 `1080×1920`，编码 `H.264 + AAC 48kHz`，音轨完整。
 - ✅ **黑帧检测（`blackdetect`）**：持续 `≥0.1s`、像素阈值 `0.05` 的黑屏帧必须为 **0**。
 - ✅ **冻帧检测（`freezedetect`）**：持续 `≥2.0s` 的完全静止画面必须为 **0**（倒逼背景加入呼吸光斑或微动效）。
 - ✅ **死寂检测（`silencedetect`）**：正文内 `≥0.30s` 的异常死寂段为 **0**，片尾留白 `≤0.30s`。
@@ -121,10 +121,10 @@ talking-head-video-skill/
         ├── voicebox_client.py                 # TTS 客户端（支持断点续跑与 --only 局部重录）
         ├── asr_check.py                       # Faster-Whisper + 拼音距离自动听审校对器
         ├── assemble_voice.py                  # 智能气口裁剪与逐段时间戳生成器
-        ├── build_captions.py                  # 逐字卡拉OK时间轴与 ≤14 字分块硬闸
+        ├── build_captions.py                  # 逐字卡拉OK时间轴与每屏 ≤14 字分块检查
         ├── render_pillow.py / render_html.mjs # 双引擎竖屏画面渲染器
         ├── loudnorm.sh                        # FFmpeg 两遍广播级响度归一脚本
-        └── qc.py                              # ★ 6 项音画机械质检器
+        └── qc.py                              # ★ 6 项音画成片自动质检器
 ```
 
 ---
@@ -142,17 +142,17 @@ talking-head-video-skill/
 
 | 仓库 | 领域 | 核心能力 |
 | :--- | :--- | :--- |
-| [**workbuddy-wechat-autopilot**](https://github.com/sixwei2025/workbuddy-wechat-autopilot) | 公众号全链路 | 九步硬闸总控：选题→写稿→真实截图→6套封面→6套排版→三重校验→草稿箱 |
-| [**wechat-cover-skill**](https://github.com/sixwei2025/wechat-cover-skill) | 公众号视觉 | 封面渲染引擎（6套高客单价杂志风 + 黑红金 v2b + DOM 几何硬闸） |
-| [**gzh-million-layout-skill**](https://github.com/sixwei2025/gzh-million-layout-skill) | 公众号排版 | 汇芯红 `#C8102E` 六套 100% 内联 CSS 骨架 + 乱码硬闸 + 配图皮肤 |
-| [**ai-tool-review-wechat-skill**](https://github.com/sixwei2025/ai-tool-review-wechat-skill) | 公众号评测 | AI 工具真跑评测工作流（5项一票否决 + 说人话硬闸 + 证据表） |
+| [**workbuddy-wechat-autopilot**](https://github.com/sixwei2025/workbuddy-wechat-autopilot) | 公众号全链路 | 九步全自动总控：选题→写稿→真实截图→6套封面→6套排版→三重自动质检→草稿箱 |
+| [**wechat-cover-skill**](https://github.com/sixwei2025/wechat-cover-skill) | 公众号视觉 | 封面渲染引擎（6套高客单价杂志风 + 黑红金 v2b + 防压脸自动校验） |
+| [**gzh-million-layout-skill**](https://github.com/sixwei2025/gzh-million-layout-skill) | 公众号排版 | 汇芯红 `#C8102E` 六套 100% 内联 CSS 骨架 + 零乱码检查 + 配图皮肤 |
+| [**ai-tool-review-wechat-skill**](https://github.com/sixwei2025/ai-tool-review-wechat-skill) | 公众号评测 | AI 工具真跑评测工作流（2.0 全自动压测 + 去碎句语感质检 + 六套骨架装配） |
 | [**hit-title-expert-skill**](https://github.com/sixwei2025/hit-title-expert-skill) | 爆款标题 | 一次直出 10 条 14–22 字高浓缩狠标题（5大公式 × 5类钩子词） |
 | [**auto-tutorial-skill**](https://github.com/sixwei2025/auto-tutorial-skill) | 短视频工程 | 链接/网页/真机截图 → 3:4 封面 + 1.5x 配音 + 红框标注教程视频 |
 | [**talking-head-video-skill**](https://github.com/sixwei2025/talking-head-video-skill) | 短视频工程 | 1080×1920 竖屏真人口播短视频（ASR 错字校对 + 逐字卡拉OK字幕 + 6项QC） |
 | [**3d-map-video-skill**](https://github.com/sixwei2025/3d-map-video-skill) | 短视频工程 | MapLibre 3D 地形 + WarFX 战争特效（粒子行军/点阵兵力/震屏混音） |
 | [**psych-kepu-video-skill**](https://github.com/sixwei2025/psych-kepu-video-skill) | 短视频工程 | Remotion + JSON 驱动的 15–30s 深色扁平动画心理科普短视频 |
 | [**dark-infographic-video-skill**](https://github.com/sixwei2025/dark-infographic-video-skill) | 短视频工程 | 纯 Python + FFmpeg 暗黑流光数据可视化科普片（含 v2 手机外放配乐） |
-| [**local-video-hub**](https://github.com/sixwei2025/local-video-hub) | AI 团队基建 | 视频版本地 Obsidian：多 AI 员工统一交片、去重门闸与四态流转云台 |
+| [**local-video-hub**](https://github.com/sixwei2025/local-video-hub) | AI 团队基建 | 视频版本地 Obsidian：多 AI 员工统一交片、撞题查重与四态流转云台 |
 | [**yuanliuwei-ai-skills**](https://github.com/sixwei2025/yuanliuwei-ai-skills) | 一人公司方法 | PACT 72h 需求验证模型与一人 AI 公司 10 大业务决策模块 |
 | [**book-skill**](https://github.com/sixwei2025/book-skill) | 知识工程 | 上传任意书籍 PDF → 自动提炼方法论生成 `.skill` + 公众号导流文案 |
 | [**huangdi-skill**](https://github.com/sixwei2025/huangdi-skill) | 认知操作系统 | 中国历史八大皇帝（秦始皇/汉武帝/唐太宗等）一手史料认知框架蒸馏 |
