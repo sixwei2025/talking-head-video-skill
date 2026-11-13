@@ -105,7 +105,7 @@ bash ../scripts/run_all.sh
 ## 引擎说明 / 缺失部分
 内置的 `render_pillow.py` 是**最小可运行替代实现**（Pillow 逐帧绘制 → ffmpeg 编码），版式简单。若要更丰富的动效，可换成 Remotion（React 组件）或 HyperFrames 类 HTML 渲染：`templates/vertical.html` 给出确定性逐帧接口 `window.THV.seek(frame,fps)`，`render_html.mjs` 用 headless Chrome 逐帧截图。本包不含任何 Remotion 工程、数字人形象或声音档案，需要使用者自备。
 
-参考：`references/流程说明.md`、`口播稿写法.md`、`配音规则.md`、`封面首帧规则.md`、`质检清单.md`；示例：`examples/ai-agent-intern/`。
+参考：`references/流程说明.md`、`口播稿写法.md`、`配音规则.md`、`封面首帧规则.md`、`质检清单.md`、[director-workflow.md](references/director-workflow.md)（开拍先写 3 候选钩子 `TREATMENT.md` + `Styleframe` 3 帧预审）；示例：`examples/ai-agent-intern/`。
 ---
 <!-- BRAND_FOOTER_HUIXIN -->
 ## 关于作者与品牌（袁六伟 · 台州汇芯）
