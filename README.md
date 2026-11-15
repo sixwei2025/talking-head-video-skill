@@ -31,7 +31,7 @@ cd my-video && PLACEHOLDER=1 TONE=1 SLUG=demo bash ../skills/talking-head-video/
 
 ## 版本记录
 
-当前版本：`v1.0.0` · 2026-11-13
+当前版本：`v1.0.1` · 2026-11-15
 完整变化记录见 [CHANGELOG.md](CHANGELOG.md)。
 
 
