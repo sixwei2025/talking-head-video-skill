@@ -1,0 +1,19 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "style": "huixin-red",
+  "caption_style": "",
+  "avatar": "",
+  "voicebox_url": "http://127.0.0.1:17493",
+  "voicebox_profile_id": "",
+  "language": "zh",
+  "min_gap": 0.28,
+  "max_gap": 0.45,
+  "seg_gap": 0.20,
+  "chars_per_sec": 5.5,
+  "caption_max_chars": 14,
+  "accent": "#C8102E",
+  "cover_title": "",
+  "loudness_target": -14.0
+}
