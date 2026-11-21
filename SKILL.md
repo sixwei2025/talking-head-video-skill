@@ -1,6 +1,6 @@
 ---
 name: talking-head-video
-version: "1.1.0"
+version: "1.2.0"
 description: 汇芯·全风格口播短视频总控工作流（Talking-Head Video Suite）。整合六大口播成片产线：① 默认极速口播管线（VoiceBox 袁六伟克隆音色 + 逐字高亮字幕 + 封面首帧 + FFmpeg 质检）；② 小黑口播视频（白底手绘小黑动作隐喻配图口播）；③ 电影感口播视频（Apple 范式 + 108 张动效配方卡 + 七层镜头反 PPT 系统）；④ 红白图解口播（红底超大字冲突封面 + 米白圆角图解卡，预装 148M Remotion 依赖免重装）；⑤ 视频号大字报视频（黑底荧光黄 + 警示红删除线反差弹簧卡点）；⑥ 数字人口播视频（白背心/本人数字人 + 48 个头部博主包装组件）。当用户说"做口播视频"、"小黑口播"、"电影感口播"、"红白图解口播"、"大字报视频"、"数字人口播"时立即使用。
 author: 袁六伟 · 台州汇芯（公众号/视频号：袁六伟）
 ---
@@ -50,6 +50,22 @@ cat build/qc.txt                                              # 质检报告
 | 11 上传（可选） | — | `upload_channels_cdp.mjs`：连接你自己已登录的浏览器（CDP），只填表不点发表 |
 
 `run_all.sh` 把 5–10 串成一次后台任务：`nohup bash ../scripts/run_all.sh > build/run.out 2>&1 &`，看 `build/DONE` / `build/FAILED` 和 `build/run.log`。中途不要分多次手动跑渲染、编码、打包，避免漏步。
+
+### 动态开头预审 & 分轨导出（v1.2.0 新增）
+1. **先只做开头 10 秒动态预审**（集中算力打磨前 10 秒黄金钩子，验收运镜与呼吸感后再渲全片）：
+   ```bash
+   PREVIEW_SECONDS=10 SLUG=demo-head bash ../scripts/run_all.sh
+   ```
+2. **可选分轨导出**（人工需在剪映里补玩梗/表情包/微调节奏时启用）：
+   ```bash
+   EXPORT_STEMS=1 SLUG=demo bash ../scripts/run_all.sh   # 同步输出 deliver/stems/（纯净画面+人声WAV+时间轴JSON）
+   ```
+3. **语义分级停顿与 Otsu 自适应双阈值**：`assemble_voice.py` 默认启用 `adaptive_vad: true`（Otsu 双阈值外延保护轻声起音与尾音余韵）与 `semantic_pauses: true`（按逗号/句号/换段分级压缩停顿；`segments.json` 单段可声明 `"pause_after": "comma" | "period" | "paragraph"`）。
+4. **表格化改片闭环**：多轮审片统一用 `templates/剪辑意见模板.md`（时间码 + 截图 + 局部/全局标签）定位修改，避免重复全量排查。
+5. **实拍/数字人/克隆音色避坑三条**：
+   - **真人口播调色给参考图**：提前提供 1 张调好肤色的帧截图，全片复刻同一参数表，别让模型凭空猜肤色；
+   - **自克隆音色少堆语气词**：克隆原声优先靠标点断句控制节奏，避免堆砌过多情绪提示词导致怪腔；
+   - **数字人首帧照三铁律**：不摆拍、**手不要入镜**（否则长时间滞留画面）、**微露牙齿**（防模型自行生成假牙）。
 
 ### 配音（有 TTS 时）
 ```bash

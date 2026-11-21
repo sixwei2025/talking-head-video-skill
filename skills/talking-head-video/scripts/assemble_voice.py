@@ -10,7 +10,20 @@
 import argparse, os, sys
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import SR, load_config, load_json, save_json, read_audio, write_wav, quiet_runs, visible_chars
+from common import SR, load_config, load_json, save_json, read_audio, write_wav, quiet_runs, otsu_quiet_runs, visible_chars
+
+SEMANTIC_SEG_GAPS = {'splice': 0.04, 'comma': 0.38, 'period': 0.52, 'paragraph': 0.68}
+
+
+def _target_internal_gap(raw_gap, mn, semantic=True):
+    if not semantic:
+        return mn
+    if raw_gap < 0.90:
+        return max(mn, 0.36)   # 逗号/短停顿
+    if raw_gap < 1.50:
+        return max(mn, 0.48)   # 句号停顿
+    return max(mn, 0.62)       # 换段停顿
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -21,19 +34,26 @@ def main():
     ap.add_argument('--out', default='build/voice')
     a = ap.parse_args()
     cfg = load_config(a.config); mn = max(0.28, cfg['min_gap']); mx = max(mn, cfg['max_gap'])
+    use_otsu = bool(cfg.get('adaptive_vad', True))
+    use_semantic = bool(cfg.get('semantic_pauses', True))
     asr = load_json(a.asr) if os.path.exists(a.asr) else {}
-    out = [np.zeros(int(0.08 * SR), np.float32)]; pos = 0.08; timing = []
-    for s in load_json(a.segments):
+    lead_pad = 0.15 if use_semantic else 0.08
+    out = [np.zeros(int(lead_pad * SR), np.float32)]; pos = lead_pad; timing = []
+    segs = load_json(a.segments)
+    for idx, s in enumerate(segs):
         x = read_audio(os.path.join(a.takes, s['id'] + '.wav'))
-        runs = quiet_runs(x, min_len=0.05)
+        runs = otsu_quiet_runs(x, min_len=0.05) if use_otsu else quiet_runs(x, min_len=0.05)
         st = runs[0][1] if runs and runs[0][0] == 0 else 0.0
         en = runs[-1][0] if runs and runs[-1][1] >= len(x) / SR - 0.011 else len(x) / SR
         st = max(0, st - 0.03); en = min(len(x) / SR, en + 0.06)
         cuts = []
         for r0, r1 in runs:
-            if r0 > st and r1 < en and r1 - r0 > mx:
-                m, h = (r0 + r1) / 2, (r1 - r0 - mn) / 2
-                cuts.append((m - h, m + h))
+            gap = r1 - r0
+            if r0 > st and r1 < en and gap > mx:
+                tgt = _target_internal_gap(gap, mn, semantic=use_semantic)
+                if gap > tgt:
+                    m, h = (r0 + r1) / 2, (gap - tgt) / 2
+                    cuts.append((m - h, m + h))
         keep, prev = [], st
         for c0, c1 in cuts:
             keep.append((prev, c0)); prev = c1
@@ -55,9 +75,18 @@ def main():
             times = [(b[i], b[i + 1]) for i in range(len(units))]
         timing.append({'id': s['id'], 'start': round(pos, 3), 'end': round(pos + L, 3),
                        'units': [{'t': u, 's': round(p, 3), 'e': round(q, 3)} for u, (p, q) in zip(units, times)]})
-        out += [seg, np.zeros(int(cfg['seg_gap'] * SR), np.float32)]; pos += L + cfg['seg_gap']
+        raw_pa = s.get('pause_after')
+        if isinstance(raw_pa, (int, float)):
+            seg_gap = max(0.04, float(raw_pa))
+        elif isinstance(raw_pa, str) and raw_pa in SEMANTIC_SEG_GAPS:
+            seg_gap = SEMANTIC_SEG_GAPS[raw_pa]
+        else:
+            seg_gap = cfg['seg_gap']
+        if idx + 1 < len(segs):
+            out += [seg, np.zeros(int(seg_gap * SR), np.float32)]; pos += L + seg_gap
+        else:
+            out += [seg, np.zeros(int(0.20 * SR), np.float32)]; pos += L + 0.20
     y = np.concatenate(out)
-    y = y[:int((pos - cfg['seg_gap'] + 0.15) * SR)]
     y *= 0.89 / max(1e-6, np.abs(y).max())
     write_wav(os.path.join(a.out, 'voice.wav'), y)
     save_json(timing, os.path.join(a.out, 'timing.json'))

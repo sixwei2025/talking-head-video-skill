@@ -21,6 +21,7 @@ def load_config(path=None):
         'brand_label': 'HUIXIN · AI STUDIO',
         'voicebox_url': 'http://127.0.0.1:17493', 'voicebox_profile_id': '', 'language': 'zh',
         'min_gap': 0.28, 'max_gap': 0.45, 'seg_gap': 0.20, 'chars_per_sec': 5.5,
+        'adaptive_vad': True, 'semantic_pauses': True,
         'caption_max_chars': 14, 'font': '', 'accent': '#C8102E', 'cover_title': '',
         'cover_kicker': 'HUIXIN · AI STUDIO', 'cover_brand': '', 'cover_sub': '',
         'cover_metric': '', 'cover_theme': 'swiss_dark', 'cover_layout': '',
@@ -68,6 +69,77 @@ def quiet_runs(x, sr=SR, thresh_db=-40.0, min_len=0.1):
         else:
             i += 1
     return runs
+
+
+def otsu_quiet_runs(x, sr=SR, margin_db=10.0, min_len=0.05):
+    """Otsu 自适应双阈值静音检测：保住轻声起音与尾音余韵，不随长停顿比例漂移。"""
+    hop = int(sr * 0.01)
+    n = len(x) // hop
+    if n < 10:
+        return quiet_runs(x, sr=sr, min_len=min_len)
+    rms = np.sqrt(np.mean(x[:n * hop].reshape(n, hop) ** 2, axis=1) + 1e-12)
+    db = 20.0 * np.log10(rms + 1e-9)
+    p_lo, p_hi = np.percentile(db, 1), np.percentile(db, 99.5)
+    if p_hi - p_lo < 3.0:
+        return quiet_runs(x, sr=sr, min_len=min_len)
+    clipped = np.clip(db, p_lo, p_hi)
+    hist, edges = np.histogram(clipped, bins=100, range=(p_lo, p_hi))
+    centers = 0.5 * (edges[:-1] + edges[1:])
+    w0 = np.cumsum(hist).astype(np.float64)
+    w1 = w0[-1] - w0
+    s_all = float(np.sum(hist * centers))
+    s0 = np.cumsum(hist * centers)
+    m0 = s0 / np.maximum(w0, 1.0)
+    m1 = (s_all - s0) / np.maximum(w1, 1.0)
+    otsu = float(centers[int(np.argmax(w0 * w1 * (m0 - m1) ** 2))])
+    q_frames = db[db <= otsu]
+    floor = float(np.median(q_frames)) if len(q_frames) else float(p_lo)
+    high_thr = max(otsu, floor + margin_db)
+    low_thr = max(high_thr - 6.0, floor + 6.0)
+
+    # 先找有声帧，再向两侧按 low_thr 外延（连续 3 帧低于 low_thr 才止步）
+    voiced = (db > high_thr).copy()
+    i = 0
+    while i < n:
+        if voiced[i]:
+            j = i
+            while j < n and voiced[j]:
+                j += 1
+            # 左外延
+            p, streak = i - 1, 0
+            while p >= 0 and streak < 3:
+                if db[p] > low_thr:
+                    voiced[p] = True
+                    streak = 0
+                else:
+                    streak += 1
+                p -= 1
+            # 右外延
+            p, streak = j, 0
+            while p < n and streak < 3:
+                if db[p] > low_thr:
+                    voiced[p] = True
+                    streak = 0
+                else:
+                    streak += 1
+                p += 1
+            i = max(j, p)
+        else:
+            i += 1
+
+    runs, i = [], 0
+    while i < n:
+        if not voiced[i]:
+            j = i
+            while j < n and not voiced[j]:
+                j += 1
+            if (j - i) * 0.01 >= min_len:
+                runs.append((i * 0.01, j * 0.01))
+            i = j
+        else:
+            i += 1
+    return runs
+
 
 def visible_chars(text):
     """Units that get a timestamp: each CJK char, each latin word / number."""
